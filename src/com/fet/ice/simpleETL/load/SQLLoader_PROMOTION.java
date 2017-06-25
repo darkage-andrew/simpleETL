@@ -1,32 +1,19 @@
 package com.fet.ice.simpleETL.load;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Date;
+
 import java.util.List;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
-import com.fet.ice.simpleETL.entity.CODE_TABLE;
 import com.fet.ice.simpleETL.entity.COMMON_ATTRIBUTE;
 import com.fet.ice.simpleETL.entity.COMMON_ENTITY;
 import com.fet.ice.simpleETL.entity.COMMON_RELATIONITEM;
 import com.fet.ice.simpleETL.entity.PROMOTION_DATA;
-import com.fet.ice.simpleETL.exception.jobException;
-import com.fet.ice.simpleETL.job.threadJob;
 import com.fet.ice.simpleETL.util.DBMgr;
 import com.fet.ice.simpleETL.util.PrintStackTraceUtil;
 import com.fet.ice.simpleETL.util.PropertyUtil;
@@ -35,18 +22,17 @@ import com.fet.ice.simpleETL.util.PropertyUtil;
 public class SQLLoader_PROMOTION {
 
 	// constants
-	protected final static int SYNC_INCREMENTAL = 0;
-	protected final static int SYNC_WHOLEBUNCH = 1;
+	protected static final int SYNC_INCREMENTAL = 0;
+	protected static final int SYNC_WHOLEBUNCH = 1;
 
-	protected final static int CONNECTION_URL_ERROR = 0;
-	protected final static int CONNECTION_DRIVER_ERROR = 1;
-	protected final static int CONNECTION_FAILED = 2;
-	protected final static int CONNECTION_DISPOSE_FAILED = 3;
+	protected static final int CONNECTION_URL_ERROR = 0;
+	protected static final int CONNECTION_DRIVER_ERROR = 1;
+	protected static final int CONNECTION_FAILED = 2;
+	protected static final int CONNECTION_DISPOSE_FAILED = 3;
 
-	protected final static String JOB_RESULT_SUCCESS = "S";
-	protected final static String JOB_RESULT_FAILED = "F";
+	protected static final String JOB_RESULT_SUCCESS = "S";
+	protected static final String JOB_RESULT_FAILED = "F";
 
-	// protected int iNumCommit = 1000;
 	private static PropertyUtil propUtil;
 	private Connection destConn;
 	private PreparedStatement ora_st;
@@ -57,7 +43,6 @@ public class SQLLoader_PROMOTION {
 	// Data sync required
 	protected int iSrcDataCount;
 	private Logger logger;
-	private boolean bFinished = false;
 	private PrintStackTraceUtil printStackTraceUtil;
 
 	// log related
@@ -112,7 +97,7 @@ public class SQLLoader_PROMOTION {
 				ora_st_item_relation = destConn.prepareStatement((String) propUtil.getProperty("STAGING_ITEM_RELATION_SQL"));
 
 				for (int i = 0; i < lsEntity.size(); i++) {
-					COMMON_ENTITY oEntity = (COMMON_ENTITY) lsEntity.get(i);
+					COMMON_ENTITY oEntity = lsEntity.get(i);
 
 					// INSERT INTO SIMPLEETL.COH_ITEM (ITEM_CODE, ITEM_TYPE,
 					// ITEM_NAME, START_DATE, END_DATE, ORDERABLE, STATUS)
@@ -132,7 +117,7 @@ public class SQLLoader_PROMOTION {
 					List<COMMON_RELATIONITEM> lsItemRelations = oEntity.getLsItemRelations();
 					for(int j = 0; j < lsItemRelations.size(); j++)
 					{
-						COMMON_RELATIONITEM oRelationItem = (COMMON_RELATIONITEM)lsItemRelations.get(j);
+						COMMON_RELATIONITEM oRelationItem = lsItemRelations.get(j);
 
 						//STAGING_ITEM_RELATION_SQL=INSERT INTO SIMPLEETL.STAGING_COH_RELATION_ITEM (PARENT_ITEM_CODE, ITEM_RELATION_TARGET, ITEM_RELATION_CODE, STATUS, START_DATE, END_DATE) 
 						//VALUES (?,?,?,?,?,?)
@@ -165,8 +150,7 @@ public class SQLLoader_PROMOTION {
 						logger.debug("oAttribute.startdate=" + oAttribute.getSTARTDATE());
 						logger.debug("oAttribute.enddate=" + oAttribute.getENDDATE());
 						logger.debug("oAttribute.defaultvalue=" + oAttribute.getDEFAULTVALUE());
-						logger.debug("oAttribute.associatetype=" + oAttribute.getASSOCIATIONTYPE());
-											
+						logger.debug("oAttribute.associatetype=" + oAttribute.getASSOCIATIONTYPE());									
 */						
 						ora_st_attr.setString(1, oEntity.getITEMCODE());
 						ora_st_attr.setString(2, oAttribute.getITEMATTRIBUTECODE());
@@ -247,7 +231,6 @@ public class SQLLoader_PROMOTION {
 			logger.info("finished date: " + sdf.format(this.dtFinished));
 			logger.info("=======================================================");
 
-			this.bFinished = true;
 		}
 	}
 
