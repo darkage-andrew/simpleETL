@@ -15,7 +15,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.fet.ice.VO.NormalizedVO;
+import com.fet.ice.simpleETL.VO.NormalizedVO;
 import com.fet.ice.simpleETL.entity.CODE_TABLE;
 import com.fet.ice.simpleETL.extract.saxhandler.SAXHandler_CODETABLE;
 import com.fet.ice.simpleETL.job.threadJob;

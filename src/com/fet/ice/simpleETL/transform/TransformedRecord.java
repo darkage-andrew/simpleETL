@@ -5,7 +5,7 @@ import java.sql.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.fet.ice.VO.NormalizedVO;
+import com.fet.ice.simpleETL.VO.NormalizedVO;
 
 public class TransformedRecord {
 
