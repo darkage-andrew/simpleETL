@@ -100,13 +100,11 @@ public class simpleETLMain {
 		// PRODUCTDATA tested ok
 		ProductData_Extractor extractor_PRODUCTDATA = new ProductData_Extractor("PRODUCT DATA extractor", logger,
 				prop.getProperty("PRODUCTDATA_XML_FILEPATH"));
-		// extractor_PRODUCTDATA.run();
 		extractor_PRODUCTDATA.run();
 
 /*		// PROMOTIONDATA tested ok
 		PromotionData_Extractor extractor_PROMOTIONDATA = new PromotionData_Extractor("PROMOTION DATA extractor",
 				logger, prop.getProperty("PROMOTIONDATA_XML_FILEPATH"));
-		// extractor_PROMOTIONDATA.run();
 		extractor_PROMOTIONDATA.run();
 */		
 	}

@@ -19,6 +19,7 @@ import com.fet.ice.simpleETL.extract.saxhandler.SAXHandler_PRODUCTDATA;
 import com.fet.ice.simpleETL.job.threadJob;
 import com.fet.ice.simpleETL.load.SQLLoader_CODETABLE;
 import com.fet.ice.simpleETL.load.SQLLoader_PRODUCT;
+import com.fet.ice.simpleETL.load.SQLLoader_PROMOTION;
 import com.fet.ice.simpleETL.transform.TransformedRecord;
 
 public class ProductData_Extractor extends threadJob {
@@ -51,6 +52,9 @@ public class ProductData_Extractor extends threadJob {
 			saxParser.parse(xmlFileURI, handler_PRODUCTDATA);
 			iStatus = this.JOB_EXTRACT_COMPLETED;
 
+			//obtaining the parsed PROMOTIONDATA object list
+			oProductData = handler_PRODUCTDATA.getPRODUCT_DATA();
+
 			
 		} catch (ParserConfigurationException pce) {
 			logger.debug(pce.getMessage());
@@ -64,14 +68,9 @@ public class ProductData_Extractor extends threadJob {
 		}
 
 		
-		
-		// execute Transform task
-		//oProductData = parser_ProductData.getPRODUCT_DATA();
-
 		// execute Load tasks
-		//SQLLoader_PRODUCT loader = new SQLLoader_PRODUCT(logger);
-		//loader.perfomSync(oProductData);
-		//logger.debug("after ProductData_Extractor.doJob()");
+		SQLLoader_PRODUCT loader = new SQLLoader_PRODUCT(logger);
+		loader.perfomSync(oProductData);
 		
 		// return result
 		iStatus = this.JOB_COMPLETED;
