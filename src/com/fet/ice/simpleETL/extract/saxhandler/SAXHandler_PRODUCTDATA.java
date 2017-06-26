@@ -20,6 +20,7 @@ import com.fet.ice.simpleETL.entity.CODETABLE_VALUEITEM;
 import com.fet.ice.simpleETL.entity.CODE_TABLE;
 import com.fet.ice.simpleETL.entity.COMMON_ENTITY;
 import com.fet.ice.simpleETL.entity.PRODUCT_DATA;
+import com.fet.ice.simpleETL.entity.PROMOTION_DATA;
 import com.fet.ice.simpleETL.entity.COMMON_RELATIONITEM;
 import com.fet.ice.simpleETL.entity.COMMON_ATTRIBUTE;
 
@@ -596,6 +597,8 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 	 * @return PRODUCT_DATA
 	 */
 	public PRODUCT_DATA getPRODUCT_DATA() {
+		oProductData = new PRODUCT_DATA();
+		
 		oProductData.setLsSubs((List<COMMON_ENTITY>) this.hmProducts.get("SUBS"));
 		oProductData.setLsSubs((List<COMMON_ENTITY>) this.hmProducts.get("L3PGS"));
 		oProductData.setLsSubs((List<COMMON_ENTITY>) this.hmProducts.get("L4PGS"));
