@@ -600,13 +600,13 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 		oProductData = new PRODUCT_DATA();
 		
 		oProductData.setLsSubs((List<COMMON_ENTITY>) this.hmProducts.get("SUBS"));
-		oProductData.setLsSubs((List<COMMON_ENTITY>) this.hmProducts.get("L3PGS"));
-		oProductData.setLsSubs((List<COMMON_ENTITY>) this.hmProducts.get("L4PGS"));
-		oProductData.setLsSubs((List<COMMON_ENTITY>) this.hmProducts.get("PRODUCTOFFERS"));
-		oProductData.setLsSubs((List<COMMON_ENTITY>) this.hmProducts.get("BFSS"));
-		oProductData.setLsSubs((List<COMMON_ENTITY>) this.hmProducts.get("CFSS"));
-		oProductData.setLsSubs((List<COMMON_ENTITY>) this.hmProducts.get("SERVICES"));
-		oProductData.setLsSubs((List<COMMON_ENTITY>) this.hmProducts.get("RFSS"));
+		oProductData.setLsL3PGs((List<COMMON_ENTITY>) this.hmProducts.get("L3PGS"));
+		oProductData.setLsL4PGs((List<COMMON_ENTITY>) this.hmProducts.get("L4PGS"));
+		oProductData.setLsPRODUCTOFFERs((List<COMMON_ENTITY>) this.hmProducts.get("PRODUCTOFFERS"));
+		oProductData.setLsBFSs((List<COMMON_ENTITY>) this.hmProducts.get("BFSS"));
+		oProductData.setLsCFs((List<COMMON_ENTITY>) this.hmProducts.get("CFSS"));
+		oProductData.setLsServices((List<COMMON_ENTITY>) this.hmProducts.get("SERVICES"));
+		oProductData.setLsRFSs((List<COMMON_ENTITY>) this.hmProducts.get("RFSS"));
 
 		return oProductData;
 	}
