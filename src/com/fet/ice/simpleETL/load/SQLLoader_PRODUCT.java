@@ -21,185 +21,247 @@ import java.util.Properties;
 import org.apache.logging.log4j.Logger;
 
 import com.fet.ice.simpleETL.entity.CODE_TABLE;
+import com.fet.ice.simpleETL.entity.COMMON_ATTRIBUTE;
+import com.fet.ice.simpleETL.entity.COMMON_ENTITY;
+import com.fet.ice.simpleETL.entity.COMMON_RELATIONITEM;
 import com.fet.ice.simpleETL.entity.PRODUCT_DATA;
 import com.fet.ice.simpleETL.exception.jobException;
 import com.fet.ice.simpleETL.job.threadJob;
+import com.fet.ice.simpleETL.util.DBMgr;
+import com.fet.ice.simpleETL.util.PrintStackTraceUtil;
+import com.fet.ice.simpleETL.util.PropertyUtil;
 
 // after data transformed, write to destination DB
 public class SQLLoader_PRODUCT {
 
 	// constants
-	protected final static int SYNC_INCREMENTAL = 0;
-	protected final static int SYNC_WHOLEBUNCH = 1;
+	protected static final int SYNC_INCREMENTAL = 0;
+	protected static final int SYNC_WHOLEBUNCH = 1;
 
-	protected final static int CONNECTION_URL_ERROR = 0;
-	protected final static int CONNECTION_DRIVER_ERROR = 1;
-	protected final static int CONNECTION_FAILED = 2;
-	protected final static int CONNECTION_DISPOSE_FAILED = 3;
+	protected static final int CONNECTION_URL_ERROR = 0;
+	protected static final int CONNECTION_DRIVER_ERROR = 1;
+	protected static final int CONNECTION_FAILED = 2;
+	protected static final int CONNECTION_DISPOSE_FAILED = 3;
 
-	protected final static int JOB_STARTED = 11;
-	protected final static int JOB_NOT_STARTED = 12;
-	protected final static int JOB_PERFORMED_FAILED = 13;
+	protected static final String JOB_RESULT_SUCCESS = "S";
+	protected static final String JOB_RESULT_FAILED = "F";
 
-	protected final static String JOB_RESULT_SUCCESS = "S";
-	protected final static String JOB_RESULT_FAILED = "F";
-
-	protected final static int DB_ORACLE = 0;
-	// parameter
-	protected boolean bAutoCommit = false;
-	protected int iNumCommit = 1000;
-
-	// destination
-	protected String destUrl;
-	protected String destDBUser;
-	protected String destDBPwd;
-	protected Connection destConn;
-
-	protected String jobName;
+	private static PropertyUtil propUtil;
+	private Connection destConn;
+	private PreparedStatement ora_st;
+	private PreparedStatement ora_st_attr;
+	private PreparedStatement ora_st_item_relation;
+	
 
 	// Data sync required
 	protected int iSrcDataCount;
 	private Logger logger;
-	private boolean bFinished = false;
+	private PrintStackTraceUtil printStackTraceUtil;
 
 	// log related
 	protected Timestamp dtPerformed;
 	protected Timestamp dtFinished;
+	private DBMgr dbMgr;
 
+	
 	public SQLLoader_PRODUCT(Logger logger) {
 		this.logger = logger;
-		logger.debug("executing simpleETL-SQLLoader_PRODUCT");
+		this.printStackTraceUtil = PrintStackTraceUtil.getPrintStackTraceUtil();
+
+		propUtil = PropertyUtil.getPropertyUtil(logger);
 	}
 
 	public void perfomSync(PRODUCT_DATA oProductData) {
 
+		dbMgr = DBMgr.getDBMgr(logger);
+		
+		List<COMMON_ENTITY> lsSubs = oProductData.getLsSubs();
+		writeToDB(lsSubs, "SUBS");
+
+		List<COMMON_ENTITY> lsL3PGS = oProductData.getLsL3PGs();
+		writeToDB(lsL3PGS, "L3PGS");
+
+		List<COMMON_ENTITY> lsL4PGS = oProductData.getLsL4PGs();
+		writeToDB(lsL4PGS, "L4PGS");
+
+		List<COMMON_ENTITY> lsPRODUCTOFFERS = oProductData.getLsPRODUCTOFFERs();
+		writeToDB(lsPRODUCTOFFERS, "PRODUCTOFFERS");
+
+		List<COMMON_ENTITY> lsBFSS = oProductData.getLsBFSs();
+		writeToDB(lsBFSS, "BFSS");
+
+		List<COMMON_ENTITY> lsCFSS = oProductData.getLsCFs();
+		writeToDB(lsCFSS, "CFSS");
+		
+		List<COMMON_ENTITY> lsSERVICES = oProductData.getLsServices();
+		writeToDB(lsSERVICES, "SERVICES");
+	
+		List<COMMON_ENTITY> lsRFSS = oProductData.getLsRFSs();
+		writeToDB(lsRFSS, "RFSS");	
+	}
+	
+	
+	
+	/**
+	 * @param lsEntity
+	 * @param sName
+	 */
+	private void writeToDB(List<COMMON_ENTITY> lsEntity, String sName) {
+
 		int iSrcCount = 0;
-		int iDestCount = 0;
+		int iLoadCount = 0;
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		recordStartTime();
 
 		try {
-			Date dtSync = new Date();
-			String dtSync_string = sdf.format(dtSync);
-
 			// perform DB sync
-			Statement ora_st = destConn.createStatement();
-			// transform to sql statement and write to DB ---------------------
 
-			// write ends here ------------------------------------------------
+			if (lsEntity != null && lsEntity.size() >= 0) {
 
-			logger.debug("after perfomSync(): updated count=" + iDestCount);
+				iSrcCount = lsEntity.size();
 
-			// commit connections
-			destConn.commit();
+				// get DB connection
+				destConn = dbMgr.createDBConnection();
+				ora_st = destConn.prepareStatement((String) propUtil.getProperty("STAGING_COH_ITEM_SQL"));
+				ora_st_attr = destConn.prepareStatement((String) propUtil.getProperty("STAGING_COH_ATTRIBUTE_SQL"));
+				ora_st_item_relation = destConn.prepareStatement((String) propUtil.getProperty("STAGING_ITEM_RELATION_SQL"));
 
-			// record job stop time
-			recordStopTime();
+				for (int i = 0; i < lsEntity.size(); i++) {
+					COMMON_ENTITY oEntity = lsEntity.get(i);
 
-			if (ora_st != null) {
-				ora_st.close();
-				ora_st = null;
+					// INSERT INTO SIMPLEETL.COH_ITEM (ITEM_CODE, ITEM_TYPE,
+					// ITEM_NAME, START_DATE, END_DATE, ORDERABLE, STATUS)
+					// VALUES (?,?,?,?,?,?,?);
+					ora_st.setString(1, oEntity.getITEMCODE());
+					ora_st.setString(2, oEntity.getITEMTYPE());
+					ora_st.setString(3, oEntity.getNAME());
+					ora_st.setString(4, oEntity.getSTARTDATE());
+					ora_st.setString(5, oEntity.getENDDATE());
+					ora_st.setString(6, oEntity.getORDERABLE());
+					ora_st.setString(7, oEntity.getSTATUS());
+
+					int iResult = ora_st.executeUpdate();
+					
+					
+					//write STAGING_COH_RELATION_ITEM
+					List<COMMON_RELATIONITEM> lsItemRelations = oEntity.getLsItemRelations();
+					for(int j = 0; j < lsItemRelations.size(); j++)
+					{
+						COMMON_RELATIONITEM oRelationItem = lsItemRelations.get(j);
+
+						//STAGING_ITEM_RELATION_SQL=INSERT INTO SIMPLEETL.STAGING_COH_RELATION_ITEM (PARENT_ITEM_CODE, ITEM_RELATION_TARGET, ITEM_RELATION_CODE, STATUS, START_DATE, END_DATE) 
+						//VALUES (?,?,?,?,?,?)
+						ora_st_item_relation.setString(1, oEntity.getITEMCODE());
+						ora_st_item_relation.setString(2, oRelationItem.getITEMRELATIONTARGET());
+						ora_st_item_relation.setString(3, oRelationItem.getITEMRELATIONCODE());
+						ora_st_item_relation.setString(4, oRelationItem.getSTATUS());
+						ora_st_item_relation.setString(5, oRelationItem.getSTARTDATE());
+						ora_st_item_relation.setString(6, oRelationItem.getENDDATE());
+												
+						ora_st_item_relation.executeUpdate();
+					}
+					
+					//write COH_ATTRIBUTE
+					List<COMMON_ATTRIBUTE> lsAttributes = oEntity.getLsAttributes();
+					
+					for(int k =0; k < lsAttributes.size(); k++){						
+						COMMON_ATTRIBUTE oAttribute = (COMMON_ATTRIBUTE)lsAttributes.get(k); 
+						
+						//STAGING_COH_ATTRIBUTE=INSERT INTO SIMPLEETL.STAGING_COH_ATTRIBUTE (PARENT_ITEM_CODE, ITEM_ATTRIBUTE_CODE, ATTRIBUTE_CODE, ITEM_RELATION_CODE, ATTR_TYPE, STATUS, ATTR_NAME, START_DATE, END_DATE, DEFAULT_VALUE, ASSOCIATION_TYPE) 
+						//VALUES (?,?,?,?,?,?,?,?,?,?,?)	
+							
+/*						logger.debug("oAttribute.parentitemcode=" + oEntity.getITEMCODE());
+						logger.debug("oAttribute.itemattributecode=" + oAttribute.getITEMATTRIBUTECODE());
+						logger.debug("oAttribute.attributecode=" + oAttribute.getATTRIBUTECODE());
+						logger.debug("oAttribute.itemrelationcode=" + oAttribute.getITEMRELATIONCODE());
+						logger.debug("oAttribute.type=" + oAttribute.getTYPE());
+						logger.debug("oAttribute.status=" + oAttribute.getSTATUS());
+						logger.debug("oAttribute.name=" + oAttribute.getNAME());
+						logger.debug("oAttribute.startdate=" + oAttribute.getSTARTDATE());
+						logger.debug("oAttribute.enddate=" + oAttribute.getENDDATE());
+						logger.debug("oAttribute.defaultvalue=" + oAttribute.getDEFAULTVALUE());
+						logger.debug("oAttribute.associatetype=" + oAttribute.getASSOCIATIONTYPE());									
+*/						
+						ora_st_attr.setString(1, oEntity.getITEMCODE());
+						ora_st_attr.setString(2, oAttribute.getITEMATTRIBUTECODE());
+						ora_st_attr.setString(3, oAttribute.getATTRIBUTECODE());
+						ora_st_attr.setString(4, oAttribute.getITEMRELATIONCODE());
+						ora_st_attr.setString(5, oAttribute.getTYPE());
+						ora_st_attr.setString(6, oAttribute.getSTATUS());
+						ora_st_attr.setString(7, oAttribute.getNAME());
+						ora_st_attr.setString(8, oAttribute.getSTARTDATE());
+						ora_st_attr.setString(9, oAttribute.getENDDATE());
+						ora_st_attr.setString(10, oAttribute.getDEFAULTVALUE());
+						ora_st_attr.setString(11, oAttribute.getASSOCIATIONTYPE());
+						
+						ora_st_attr.executeUpdate();
+					}
+					
+					iLoadCount += iResult;
+				}
+								
+				if (!dbMgr.isAutoCommit()) {
+					destConn.commit();
+				}
+			}
+
+			// dispose statements and connection
+			try {
+				// dispose statements
+				if (ora_st != null) {
+					ora_st.close();
+					ora_st = null;
+				}
+				
+				
+				if (ora_st_item_relation != null) {
+					ora_st_item_relation.close();
+					ora_st_item_relation = null;
+				}
+
+
+				if (ora_st_attr != null) {
+					ora_st_attr.close();
+					ora_st_attr = null;
+				}
+
+				
+				// dispose connection
+				if (this.destConn != null) {
+					destConn.close();
+					destConn = null;
+				}
+
+			} catch (SQLException sqle) {
+				logger.debug(sqle.getMessage());
 			}
 
 		} // end try
 		catch (SQLException se) {
-			logger.error("[" + jobName + "] SQLException: " + printStackTrace(se));
-			logger.debug("[" + jobName + "] SQLException:" + se.getMessage());
+			logger.error("[SQLLoader_PROMOTION] SQLException: " + this.printStackTraceUtil.printStackTrace(se));
+			logger.debug("[SQLLoader_PROMOTION] SQLException:" + se.getMessage());
 
 			try {
 				// rollback the whole transaction in Src Connection,
 				destConn.rollback();
 			} catch (SQLException se4) {
-				logger.error("[" + this.jobName + "] SQLException4: " + printStackTrace(se4));
-				logger.debug("[" + jobName + "] SQLException4: " + se4.getMessage());
+				logger.error("[SQLLoader_PROMOTION] SQLException4: " + this.printStackTraceUtil.printStackTrace(se4));
+				logger.debug("[SQLLoader_PROMOTION] SQLException4: " + se4.getMessage());
 			}
-
-			this.recordStopTime();
 		}
 
 		finally {
-			logger.info("================ " + this.jobName + " =================");
+			// record job stop time
+			recordStopTime();
+
+			logger.info("================ SQLLoader_PRODUCT (" + sName + ") ==================");
 			logger.info("start date: " + sdf.format(this.dtPerformed));
 			logger.info("read source: " + iSrcCount + " records");
-			logger.info("write destination: " + iDestCount + " records");
+			logger.info("write destination: " + iLoadCount + " records");
 			logger.info("finished date: " + sdf.format(this.dtFinished));
 			logger.info("=======================================================");
 
-			this.bFinished = true;
 		}
-
-	}
-
-	/**
-	 * 設定目的DB連結參數
-	 * 
-	 * @param ip:
-	 *            DB server ip
-	 * @param port:
-	 *            port
-	 * @param sid:
-	 *            oracle SID
-	 * @param sUser:
-	 *            USER NAME
-	 * @param sPW:
-	 *            PASSWORD
-	 * @param schema:
-	 *            SCHEMA NAME
-	 */
-	public void setDestDBParameters(String sConnStr, String sUser, String sPW) {
-		destUrl = sConnStr;
-		destDBUser = sUser;
-		destDBPwd = sPW;
-	}
-
-	/**
-	 * 取得錯誤訊息
-	 * 
-	 * @param ex
-	 *            Throwable
-	 * @return 回傳拋出異常資訊的字串
-	 */
-	public String printStackTrace(Throwable ex) {
-		StringWriter swriter = new StringWriter();
-		PrintWriter pwriter = new PrintWriter(swriter);
-		ex.printStackTrace(pwriter);
-		String stackTrace = swriter.toString();
-		try {
-			swriter.close();
-			pwriter.close();
-		} catch (IOException ioe) {
-		}
-		return stackTrace;
-	}
-
-	/**
-	 * 建立 DB連線
-	 * 
-	 * @param sUrl:
-	 *            URL
-	 * @param sUser:
-	 *            USER NAME
-	 * @param sPW:
-	 *            PASSWORD
-	 * @return: Connection
-	 */
-	protected Connection createDBConnection(int iDBType, String sUrl, String sUser, String sPW) {
-		Connection conn = null;
-
-		try {
-			switch (iDBType) {
-			case DB_ORACLE:
-				Class.forName("oracle.jdbc.driver.OracleDriver");
-				conn = DriverManager.getConnection(sUrl, sUser, sPW);
-				break;
-			}
-
-			conn.setAutoCommit(bAutoCommit);
-		} catch (ClassNotFoundException cnfe) {
-			logger.debug("[" + jobName + "].createDBConnection() ClassNotFoundException: " + printStackTrace(cnfe));
-		} catch (SQLException se) {
-			logger.debug("[" + jobName + "].createDBConnection() SQLException: " + printStackTrace(se));
-		}
-		return conn;
 	}
 
 	/**
@@ -211,7 +273,7 @@ public class SQLLoader_PRODUCT {
 				destConn.close();
 				destConn = null;
 			} catch (SQLException se) {
-				logger.debug("SQLException: " + printStackTrace(se));
+				logger.debug("SQLException: " + this.printStackTraceUtil.printStackTrace(se));
 			}
 		}
 
@@ -229,13 +291,6 @@ public class SQLLoader_PRODUCT {
 	 */
 	protected void recordStopTime() {
 		this.dtFinished = new Timestamp(new java.util.Date().getTime());
-	}
-
-	/**
-	 * 子物件繼承且 override 的方法
-	 */
-	protected void setPerformLog() {
-
 	}
 
 	/**
