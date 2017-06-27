@@ -50,9 +50,9 @@ public class simpleETLMain {
 	 * 
 	 */
 	public simpleETLMain() {
-		
+
 		logger = LogManager.getLogger(this.getClass().getName());
-		
+
 		// read in properties for ETL batch jobs
 		prop = new Properties();
 
@@ -91,35 +91,34 @@ public class simpleETLMain {
 	}
 
 	private static void runSequential() {
-			
-/*		// CODATABLE tested ok
+
+		// CODATABLE tested ok
 		CODETABLE_Extractor extractor_CODETABLE = new CODETABLE_Extractor("CODE_TABLE extractor", logger,
 				prop.getProperty("CODETABLE_XML_FILEPATH"));
 		extractor_CODETABLE.run();
-*/
+
 		// PRODUCTDATA tested ok
-/*		ProductData_Extractor extractor_PRODUCTDATA = new ProductData_Extractor("PRODUCT DATA extractor", logger,
+		ProductData_Extractor extractor_PRODUCTDATA = new ProductData_Extractor("PRODUCT DATA extractor", logger,
 				prop.getProperty("PRODUCTDATA_XML_FILEPATH"));
 		extractor_PRODUCTDATA.run();
-*/
+
 		// PROMOTIONDATA tested ok
 		PromotionData_Extractor extractor_PROMOTIONDATA = new PromotionData_Extractor("PROMOTION DATA extractor",
 				logger, prop.getProperty("PROMOTIONDATA_XML_FILEPATH"));
-		extractor_PROMOTIONDATA.run();		
+		extractor_PROMOTIONDATA.run();
 	}
 
-	
-	private String getRunningMode()
-	{		
-		switch(running_mode){
-		case 1: return "Parallel Mode";
-		case 2: return "Sequential Mode";
+	private String getRunningMode() {
+		switch (running_mode) {
+		case 1:
+			return "Parallel Mode";
+		case 2:
+			return "Sequential Mode";
+		default:
+			return "";
 		}
-		
-		return "";
 	}
-	
-	
+
 	/**
 	 * @param args
 	 */
@@ -129,11 +128,12 @@ public class simpleETLMain {
 
 		// obtains the start time and logged.
 		Timestamp dtStarted = new Timestamp(new java.util.Date().getTime());
-		logger.debug("simpleETL Main(): " + batchMain.getRunningMode() + ", starts @ " + dtStarted + " -----------------------------------------------------------------------");
+		logger.debug("simpleETL Main(): " + batchMain.getRunningMode() + ", starts @ " + dtStarted
+				+ " -----------------------------------------------------------------------");
 
 		// 2 options here, parallel & sequential execution
 		switch (running_mode) {
-		case PARALLEL_MODE:
+		case PARALLEL_MODE: {
 			// RejectedExecutionHandler implementation
 			RejectedExecutionHandlerImpl rejectionHandler = new RejectedExecutionHandlerImpl(logger);
 
@@ -165,16 +165,21 @@ public class simpleETLMain {
 			} catch (InterruptedException ie) {
 				logger.debug(ie.getMessage());
 			}
-
 			break;
-		case SEQUENTIAL_MODE:
+		}
+		case SEQUENTIAL_MODE: {
 			runSequential();
 			break;
 		}
-		
+		default:
+			break;
+		}
+
 		// obtains the stop time and logged.
 		Timestamp dtFinished = new Timestamp(new java.util.Date().getTime());
-		logger.debug("simpleETL Main(): "+ batchMain.getRunningMode() + ", stops @ " + dtFinished + ". Total time consumed - " + (dtFinished.getTime() - dtStarted.getTime()) + " ms. ---------------------------------------");
+		logger.debug("simpleETL Main(): " + batchMain.getRunningMode() + ", stops @ " + dtFinished
+				+ ". Total time consumed - " + (dtFinished.getTime() - dtStarted.getTime())
+				+ " ms. ---------------------------------------");
 	}
 
 }
