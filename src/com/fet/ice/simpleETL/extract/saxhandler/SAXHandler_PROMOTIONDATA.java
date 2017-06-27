@@ -1,25 +1,16 @@
 package com.fet.ice.simpleETL.extract.saxhandler;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Stack;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.fet.ice.simpleETL.entity.CODETABLE_VALUEITEM;
-import com.fet.ice.simpleETL.entity.CODE_TABLE;
 import com.fet.ice.simpleETL.entity.COMMON_ENTITY;
-import com.fet.ice.simpleETL.entity.PRODUCT_DATA;
 import com.fet.ice.simpleETL.entity.PROMOTION_DATA;
 import com.fet.ice.simpleETL.entity.COMMON_RELATIONITEM;
 import com.fet.ice.simpleETL.entity.COMMON_ATTRIBUTE;
@@ -36,7 +27,6 @@ public class SAXHandler_PROMOTIONDATA extends DefaultHandler {
 	private static final int CURRENT_RELATION_ITEM = 5;
 	private static final int CURRENT_ATTRIBUTE = 6;
 
-	private String xmlFileName;
 	private Logger logger;
 
 	private HashMap<String, List<COMMON_ENTITY>> hmPromotionData;
@@ -72,6 +62,7 @@ public class SAXHandler_PROMOTIONDATA extends DefaultHandler {
 		iCurrentSubObject = 0;
 	}
 
+	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		sObjVal = "";
 
@@ -243,6 +234,7 @@ public class SAXHandler_PROMOTIONDATA extends DefaultHandler {
 
 	}
 
+	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 
 		// parsing PROMOTION_GROUP =============
@@ -401,6 +393,7 @@ public class SAXHandler_PROMOTIONDATA extends DefaultHandler {
 		}
 	}
 
+	@Override
 	public void characters(char ch[], int start, int length) throws SAXException {
 		sObjVal = new String(ch, start, length).trim();
 	}
