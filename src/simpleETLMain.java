@@ -92,21 +92,20 @@ public class simpleETLMain {
 
 	private static void runSequential() {
 			
-		// CODATABLE tested ok
-/*		CODETABLE_Extractor extractor_CODETABLE = new CODETABLE_Extractor("CODE_TABLE extractor", logger,
+/*		// CODATABLE tested ok
+		CODETABLE_Extractor extractor_CODETABLE = new CODETABLE_Extractor("CODE_TABLE extractor", logger,
 				prop.getProperty("CODETABLE_XML_FILEPATH"));
 		extractor_CODETABLE.run();
 */
 		// PRODUCTDATA tested ok
-		ProductData_Extractor extractor_PRODUCTDATA = new ProductData_Extractor("PRODUCT DATA extractor", logger,
+/*		ProductData_Extractor extractor_PRODUCTDATA = new ProductData_Extractor("PRODUCT DATA extractor", logger,
 				prop.getProperty("PRODUCTDATA_XML_FILEPATH"));
 		extractor_PRODUCTDATA.run();
-
-/*		// PROMOTIONDATA tested ok
+*/
+		// PROMOTIONDATA tested ok
 		PromotionData_Extractor extractor_PROMOTIONDATA = new PromotionData_Extractor("PROMOTION DATA extractor",
 				logger, prop.getProperty("PROMOTIONDATA_XML_FILEPATH"));
-		extractor_PROMOTIONDATA.run();
-*/		
+		extractor_PROMOTIONDATA.run();		
 	}
 
 	

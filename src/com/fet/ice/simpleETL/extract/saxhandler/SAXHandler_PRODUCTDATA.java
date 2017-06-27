@@ -40,12 +40,11 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 	private static final int CURRENT_RELATION_ITEM = 9;
 	private static final int CURRENT_ATTRIBUTE = 10;
 
-	private static int iCurrentObject;
-	private static int iCurrentSubObject;
+	private int iCurrentObject;
+	private int iCurrentSubObject;
 
 	private int iCount = 0;
 
-	private String xmlFileName;
 	private Logger logger;
 
 	private HashMap<String, List<COMMON_ENTITY>> hmProducts;
@@ -122,6 +121,7 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 
 		// for parsing
 		// L3PGS============================================================
+		
 		if (qName.equalsIgnoreCase("L3PGS")) {
 			if (!hmProducts.containsKey("L3PGS")) {
 				// new COMMON_ENTITY with DATATYPE="L3PG"
@@ -166,6 +166,7 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 			this.iCurrentSubObject = 0;
 		}
 
+
 		// for parsing
 		// PRODUCTOFFERS============================================================
 		if (qName.equalsIgnoreCase("PRODUCTOFFERS")) {
@@ -183,7 +184,7 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 			iCount += 1;
 			this.oProductData_PRODUCTOFFER = new COMMON_ENTITY("PRODUCTOFFER");
 			lsPRODUCTOFFERs.add(oProductData_PRODUCTOFFER);
-			logger.debug("----PRODUCTOFFER #"+iCount);
+			logger.debug("----PRODUCTOFFER #" + iCount);
 
 			this.iCurrentObject = this.CURRENT_PRODUCTOFFER;
 			this.iCurrentSubObject = 0;
@@ -206,7 +207,7 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 			iCount += 1;
 			this.oProductData_BFS = new COMMON_ENTITY("BFS");
 			lsBFSs.add(oProductData_BFS);
-			logger.debug("----BFS #"+iCount);
+			logger.debug("----BFS #" + iCount);
 
 			this.iCurrentObject = this.CURRENT_BFS;
 			this.iCurrentSubObject = 0;
@@ -230,7 +231,7 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 			iCount += 1;
 			this.oProductData_CFS = new COMMON_ENTITY("CFS");
 			lsCFSs.add(oProductData_CFS);
-			logger.debug("----CFS #"+iCount);
+			logger.debug("----CFS #" + iCount);
 
 			this.iCurrentObject = this.CURRENT_CFS;
 			this.iCurrentSubObject = 0;
@@ -254,7 +255,7 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 			// keeps adding new record
 			this.oProductData_SERVICE = new COMMON_ENTITY("SERVICE");
 			lsSERVICEs.add(oProductData_SERVICE);
-			logger.debug("----SERVICE #"+iCount);
+			logger.debug("----SERVICE #" + iCount);
 
 			this.iCurrentObject = this.CURRENT_SERVICE;
 			this.iCurrentSubObject = 0;
@@ -277,12 +278,13 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 			// keeps adding new record
 			this.oProductData_RFS = new COMMON_ENTITY("RFS");
 			lsRFSs.add(oProductData_RFS);
-			logger.debug("----RFS #"+iCount );
+			logger.debug("----RFS #" + iCount);
 
 			this.iCurrentObject = this.CURRENT_RFS;
 			this.iCurrentSubObject = 0;
 		}
 
+		
 		// children data - relation_items, got to do multiple check based on
 		// iCurrentObject
 		if (qName.equalsIgnoreCase("ITEMRELATIONS")) {
@@ -320,6 +322,7 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 			logger.debug("------ITEMRELATIONS");
 		}
 
+		
 		if (qName.equalsIgnoreCase("RELATION_ITEM")) {
 			// construct COMMON_RELATIONITEM object
 			oRelationItem = new COMMON_RELATIONITEM();
@@ -388,6 +391,7 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 		// for parsing
 		// SUBS============================================================
 
+		
 		// for parsing
 		// L3PGS============================================================
 		if (this.iCurrentObject == this.CURRENT_L3PG) {
@@ -443,13 +447,13 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 		}
 		// for parsing
 		// RFSS===================================================================
-
+		
 	}
 
 	// for further fine tune purpose
 	private void endElement_ProductData(String qName, COMMON_ENTITY oProductData) {
-		
-		if (qName.equalsIgnoreCase("ITEMCODE")) {
+
+		if (qName.equalsIgnoreCase("ITEMCODE") ) {
 			// construct SUB object with attributes
 			oProductData.setITEMCODE(sObjVal);
 			logger.debug("------ITEMCODE=" + sObjVal);
@@ -499,8 +503,12 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 			logger.debug("----------ITEMRELATIONTARGET=" + sObjVal);
 		}
 
-		if (qName.equalsIgnoreCase("ITEMRELATIONCODE")) {
+		if (qName.equalsIgnoreCase("ITEMRELATIONCODE")&& (iCurrentSubObject == CURRENT_RELATION_ITEM)) {
 			oRelationItem.setITEMRELATIONCODE(sObjVal);
+			logger.debug("debug: ITEMRELATIONCODE=" + sObjVal);
+			if (sObjVal.isEmpty() || sObjVal.length() == 0 || sObjVal == null) {
+				logger.debug("PRODUCTDATA.ItemCode=" + oProductData.getITEMCODE() + ", RelationItem.ITEMRELATIONCODE 為空!!");
+			}
 			logger.debug("----------ITEMRELATIONCODE=" + sObjVal);
 		}
 
@@ -535,6 +543,11 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 
 		if (qName.equalsIgnoreCase("ITEMRELATIONCODE") && (iCurrentSubObject == CURRENT_ATTRIBUTE)) {
 			oAttribute.setITEMRELATIONCODE(sObjVal);
+			logger.debug("debug: Attribute.ITEMRELATIONCODE=" + sObjVal);
+			
+			if (sObjVal.isEmpty() || sObjVal.length() == 0 || sObjVal == null) {
+				logger.debug("PRODUCTDATA.ItemCode=" + oProductData.getITEMCODE() + ", Attribute.ITEMRELATIONCODE 為空!!");
+			}
 			logger.debug("----------ITEMRELATIONCODE=" + sObjVal);
 		}
 
@@ -598,13 +611,13 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 	 */
 	public PRODUCT_DATA getPRODUCT_DATA() {
 		oProductData = new PRODUCT_DATA();
-		
+
 		oProductData.setLsSubs((List<COMMON_ENTITY>) this.hmProducts.get("SUBS"));
 		oProductData.setLsL3PGs((List<COMMON_ENTITY>) this.hmProducts.get("L3PGS"));
 		oProductData.setLsL4PGs((List<COMMON_ENTITY>) this.hmProducts.get("L4PGS"));
 		oProductData.setLsPRODUCTOFFERs((List<COMMON_ENTITY>) this.hmProducts.get("PRODUCTOFFERS"));
 		oProductData.setLsBFSs((List<COMMON_ENTITY>) this.hmProducts.get("BFSS"));
-		oProductData.setLsCFs((List<COMMON_ENTITY>) this.hmProducts.get("CFSS"));
+		oProductData.setLsCFSs((List<COMMON_ENTITY>) this.hmProducts.get("CFSS"));
 		oProductData.setLsServices((List<COMMON_ENTITY>) this.hmProducts.get("SERVICES"));
 		oProductData.setLsRFSs((List<COMMON_ENTITY>) this.hmProducts.get("RFSS"));
 

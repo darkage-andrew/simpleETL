@@ -11,7 +11,7 @@ public class PRODUCT_DATA {
 	private List<COMMON_ENTITY> lsL4PGs;
 	private List<COMMON_ENTITY> lsPRODUCTOFFERs;
 	private List<COMMON_ENTITY> lsBFSs;
-	private List<COMMON_ENTITY> lsCFs;
+	private List<COMMON_ENTITY> lsCFSs;
 	private List<COMMON_ENTITY> lsServices;
 	private List<COMMON_ENTITY> lsRFSs;
 	
@@ -120,8 +120,8 @@ public class PRODUCT_DATA {
 	/**
 	 * @return the lsCFs
 	 */
-	public List<COMMON_ENTITY> getLsCFs() {
-		return lsCFs;
+	public List<COMMON_ENTITY> getLsCFSs() {
+		return lsCFSs;
 	}
 
 
@@ -129,8 +129,8 @@ public class PRODUCT_DATA {
 	/**
 	 * @param lsCFs the lsCFs to set
 	 */
-	public void setLsCFs(List<COMMON_ENTITY> lsCFs) {
-		this.lsCFs = lsCFs;
+	public void setLsCFSs(List<COMMON_ENTITY> lsCFSs) {
+		this.lsCFSs = lsCFSs;
 	}
 
 

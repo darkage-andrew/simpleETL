@@ -69,8 +69,8 @@ public class ProductData_Extractor extends threadJob {
 
 		
 		// execute Load tasks
-		SQLLoader_PRODUCT loader = new SQLLoader_PRODUCT(logger);
-		loader.perfomSync(oProductData);
+		//SQLLoader_PRODUCT loader = new SQLLoader_PRODUCT(logger);
+		//loader.perfomSync(oProductData);
 		
 		// return result
 		iStatus = this.JOB_COMPLETED;

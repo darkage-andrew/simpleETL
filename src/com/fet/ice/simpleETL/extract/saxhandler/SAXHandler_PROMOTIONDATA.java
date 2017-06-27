@@ -45,7 +45,7 @@ public class SAXHandler_PROMOTIONDATA extends DefaultHandler {
 	private COMMON_ENTITY oPromotion_GROUP;
 	private List<COMMON_ENTITY> lsGROUPs;
 
-	private COMMON_ENTITY oPromotion_ACTITY;
+	private COMMON_ENTITY oPromotion_ACTIVITY;
 	private List<COMMON_ENTITY> lsACTIVITIES;
 
 	private COMMON_ENTITY oPromotion_PROMOTION;
@@ -118,8 +118,8 @@ public class SAXHandler_PROMOTIONDATA extends DefaultHandler {
 			iCount += 1;
 			// keeps adding new record
 			// new COMMON_ENTITY with DATATYPE="ACTIVITY"
-			this.oPromotion_ACTITY = new COMMON_ENTITY("ACTIVITY");
-			lsACTIVITIES.add(oPromotion_ACTITY);
+			this.oPromotion_ACTIVITY = new COMMON_ENTITY("ACTIVITY");
+			lsACTIVITIES.add(oPromotion_ACTIVITY);
 
 			logger.debug("----ACTIVITY #" + iCount);
 
@@ -183,7 +183,7 @@ public class SAXHandler_PROMOTIONDATA extends DefaultHandler {
 				this.oPromotion_GROUP.setLsItemRelations(lsRelationItems);
 				break;
 			case 2:
-				this.oPromotion_ACTITY.setLsItemRelations(lsRelationItems);
+				this.oPromotion_ACTIVITY.setLsItemRelations(lsRelationItems);
 				break;
 			case 3:
 				this.oPromotion_PROMOTION.setLsItemRelations(lsRelationItems);
@@ -218,7 +218,7 @@ public class SAXHandler_PROMOTIONDATA extends DefaultHandler {
 				this.oPromotion_GROUP.setLsAttributes(lsAttributes);
 				break;
 			case 2:
-				this.oPromotion_ACTITY.setLsAttributes(lsAttributes);
+				this.oPromotion_ACTIVITY.setLsAttributes(lsAttributes);
 				break;
 			case 3:
 				this.oPromotion_PROMOTION.setLsAttributes(lsAttributes);
@@ -252,7 +252,7 @@ public class SAXHandler_PROMOTIONDATA extends DefaultHandler {
 
 		// parsing ACTIVITY =============
 		if (this.iCurrentObject == this.CURRENT_ACTIVITY) {
-			endElement_PromotionData(qName, oPromotion_ACTITY);
+			endElement_PromotionData(qName, oPromotion_ACTIVITY);
 		}
 
 		// parsing PROMOTION =============
@@ -322,6 +322,9 @@ public class SAXHandler_PROMOTIONDATA extends DefaultHandler {
 
 		if (qName.equalsIgnoreCase("ITEMRELATIONCODE") && (iCurrentSubObject == CURRENT_RELATION_ITEM)) {
 			oRelationItem.setITEMRELATIONCODE(sObjVal);
+			if (sObjVal.isEmpty() || sObjVal.length() == 0 || sObjVal == null) {
+				logger.error("PROMOTIONDATA.ItemCode=" + oEntity.getITEMCODE() + ", RelationItem.ITEMRELATIONCODE 為空!!");
+			}
 			logger.debug("----------ITEMRELATIONCODE=" + sObjVal);
 		}
 
@@ -356,6 +359,9 @@ public class SAXHandler_PROMOTIONDATA extends DefaultHandler {
 
 		if (qName.equalsIgnoreCase("ITEMRELATIONCODE") && (iCurrentSubObject == CURRENT_ATTRIBUTE)) {
 			oAttribute.setITEMRELATIONCODE(sObjVal);
+			if (sObjVal.isEmpty() || sObjVal.length() == 0 || sObjVal == null) {
+				logger.error("PROMOTIONDATA.ItemCode=" + oEntity.getITEMCODE() + ", Attribute.ITEMRELATIONCODE 為空!!");
+			}
 			logger.debug("----------ITEMRELATIONCODE=" + sObjVal);
 		}
 

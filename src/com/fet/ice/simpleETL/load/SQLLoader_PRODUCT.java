@@ -75,7 +75,7 @@ public class SQLLoader_PRODUCT {
 
 		dbMgr = DBMgr.getDBMgr(logger);
 		
-		List<COMMON_ENTITY> lsSubs = oProductData.getLsSubs();
+/*		List<COMMON_ENTITY> lsSubs = oProductData.getLsSubs();
 		writeToDB(lsSubs, "SUBS");
 
 		List<COMMON_ENTITY> lsL3PGS = oProductData.getLsL3PGs();
@@ -90,7 +90,7 @@ public class SQLLoader_PRODUCT {
 		List<COMMON_ENTITY> lsBFSS = oProductData.getLsBFSs();
 		writeToDB(lsBFSS, "BFSS");
 
-		List<COMMON_ENTITY> lsCFSS = oProductData.getLsCFs();
+		List<COMMON_ENTITY> lsCFSS = oProductData.getLsCFSs();
 		writeToDB(lsCFSS, "CFSS");
 		
 		List<COMMON_ENTITY> lsSERVICES = oProductData.getLsServices();
@@ -98,7 +98,7 @@ public class SQLLoader_PRODUCT {
 	
 		List<COMMON_ENTITY> lsRFSS = oProductData.getLsRFSs();
 		writeToDB(lsRFSS, "RFSS");	
-	}
+*/	}
 	
 	
 	
@@ -110,6 +110,8 @@ public class SQLLoader_PRODUCT {
 
 		int iSrcCount = 0;
 		int iLoadCount = 0;
+		int iResult = 0;
+		
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		recordStartTime();
 
@@ -122,9 +124,9 @@ public class SQLLoader_PRODUCT {
 
 				// get DB connection
 				destConn = dbMgr.createDBConnection();
-				ora_st = destConn.prepareStatement((String) propUtil.getProperty("STAGING_COH_ITEM_SQL"));
-				ora_st_attr = destConn.prepareStatement((String) propUtil.getProperty("STAGING_COH_ATTRIBUTE_SQL"));
-				ora_st_item_relation = destConn.prepareStatement((String) propUtil.getProperty("STAGING_ITEM_RELATION_SQL"));
+				ora_st = destConn.prepareStatement((String) propUtil.getProperty("COH_ITEM_SQL"));
+				ora_st_attr = destConn.prepareStatement((String) propUtil.getProperty("COH_ATTRIBUTE_SQL"));
+				ora_st_item_relation = destConn.prepareStatement((String) propUtil.getProperty("ITEM_RELATION_SQL"));
 
 				for (int i = 0; i < lsEntity.size(); i++) {
 					COMMON_ENTITY oEntity = lsEntity.get(i);
@@ -140,7 +142,7 @@ public class SQLLoader_PRODUCT {
 					ora_st.setString(6, oEntity.getORDERABLE());
 					ora_st.setString(7, oEntity.getSTATUS());
 
-					int iResult = ora_st.executeUpdate();
+					iResult = ora_st.executeUpdate();
 					
 					
 					//write STAGING_COH_RELATION_ITEM
@@ -197,6 +199,7 @@ public class SQLLoader_PRODUCT {
 						ora_st_attr.executeUpdate();
 					}
 					
+					logger.debug("iResult("+i+")=" + iResult);
 					iLoadCount += iResult;
 				}
 								
@@ -238,15 +241,15 @@ public class SQLLoader_PRODUCT {
 
 		} // end try
 		catch (SQLException se) {
-			logger.error("[SQLLoader_PROMOTION] SQLException: " + this.printStackTraceUtil.printStackTrace(se));
-			logger.debug("[SQLLoader_PROMOTION] SQLException:" + se.getMessage());
+			logger.error("[SQLLoader_PRODUCT] SQLException: " + this.printStackTraceUtil.printStackTrace(se));
+			logger.debug("[SQLLoader_PRODUCT] SQLException:" + se.getMessage());
 
 			try {
 				// rollback the whole transaction in Src Connection,
 				destConn.rollback();
 			} catch (SQLException se4) {
-				logger.error("[SQLLoader_PROMOTION] SQLException4: " + this.printStackTraceUtil.printStackTrace(se4));
-				logger.debug("[SQLLoader_PROMOTION] SQLException4: " + se4.getMessage());
+				logger.error("[SQLLoader_PRODUCT] SQLException4: " + this.printStackTraceUtil.printStackTrace(se4));
+				logger.debug("[SQLLoader_PRODUCT] SQLException4: " + se4.getMessage());
 			}
 		}
 
