@@ -21,14 +21,14 @@ public class JobsMonitor implements Runnable {
         this.executor = executor;
         this.seconds = delay;
 		
-        logger = LogManager.getLogger(this.getClass().getName());
-		logger.debug("Jobs Monitor started -----------------------------------------------------------");
+        logger = LogManager.getLogger("JobsMonitor");
+		logger.info("Jobs Monitor started -----------------------------------------------------------");
 	}
 
 	
     public void shutdown(){
         this.bRunning=false;
-		logger.debug("Jobs Monitor stoped ------------------------------------------------------------");
+		logger.info("Jobs Monitor stoped ------------------------------------------------------------");
     }
 	
 	
@@ -49,9 +49,10 @@ public class JobsMonitor implements Runnable {
             try {
                 Thread.sleep(seconds*1000);
             } catch (InterruptedException e) {
-                logger.debug(printStackTrace(e));
-            }			
-		}			
+                logger.info(printStackTrace(e));
+            }
+		}
+		
 	}
 
 	

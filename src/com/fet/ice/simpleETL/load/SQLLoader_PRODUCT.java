@@ -51,19 +51,19 @@ public class SQLLoader_PRODUCT {
 	private PreparedStatement ora_st;
 	private PreparedStatement ora_st_attr;
 	private PreparedStatement ora_st_item_relation;
-	
 
 	// Data sync required
 	protected int iSrcDataCount;
 	private Logger logger;
 	private PrintStackTraceUtil printStackTraceUtil;
+	private int iAttributeErr;
+	private int iRelationItemErr;
 
 	// log related
 	protected Timestamp dtPerformed;
 	protected Timestamp dtFinished;
 	private DBMgr dbMgr;
 
-	
 	public SQLLoader_PRODUCT(Logger logger) {
 		this.logger = logger;
 		this.printStackTraceUtil = PrintStackTraceUtil.getPrintStackTraceUtil();
@@ -74,8 +74,8 @@ public class SQLLoader_PRODUCT {
 	public void perfomSync(PRODUCT_DATA oProductData) {
 
 		dbMgr = DBMgr.getDBMgr(logger);
-		
-/*		List<COMMON_ENTITY> lsSubs = oProductData.getLsSubs();
+
+		List<COMMON_ENTITY> lsSubs = oProductData.getLsSubs();
 		writeToDB(lsSubs, "SUBS");
 
 		List<COMMON_ENTITY> lsL3PGS = oProductData.getLsL3PGs();
@@ -92,16 +92,14 @@ public class SQLLoader_PRODUCT {
 
 		List<COMMON_ENTITY> lsCFSS = oProductData.getLsCFSs();
 		writeToDB(lsCFSS, "CFSS");
-		
+
 		List<COMMON_ENTITY> lsSERVICES = oProductData.getLsServices();
 		writeToDB(lsSERVICES, "SERVICES");
-	
+
 		List<COMMON_ENTITY> lsRFSS = oProductData.getLsRFSs();
-		writeToDB(lsRFSS, "RFSS");	
-*/	}
-	
-	
-	
+		writeToDB(lsRFSS, "RFSS");
+	}
+
 	/**
 	 * @param lsEntity
 	 * @param sName
@@ -111,7 +109,7 @@ public class SQLLoader_PRODUCT {
 		int iSrcCount = 0;
 		int iLoadCount = 0;
 		int iResult = 0;
-		
+
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		recordStartTime();
 
@@ -143,47 +141,75 @@ public class SQLLoader_PRODUCT {
 					ora_st.setString(7, oEntity.getSTATUS());
 
 					iResult = ora_st.executeUpdate();
-					
-					
-					//write STAGING_COH_RELATION_ITEM
+
+					// write STAGING_COH_RELATION_ITEM
 					List<COMMON_RELATIONITEM> lsItemRelations = oEntity.getLsItemRelations();
-					for(int j = 0; j < lsItemRelations.size(); j++)
-					{
+					iRelationItemErr = 0;
+
+					for (int j = 0; j < lsItemRelations.size(); j++) {
 						COMMON_RELATIONITEM oRelationItem = lsItemRelations.get(j);
 
-						//STAGING_ITEM_RELATION_SQL=INSERT INTO SIMPLEETL.STAGING_COH_RELATION_ITEM (PARENT_ITEM_CODE, ITEM_RELATION_TARGET, ITEM_RELATION_CODE, STATUS, START_DATE, END_DATE) 
-						//VALUES (?,?,?,?,?,?)
+						// STAGING_ITEM_RELATION_SQL=INSERT INTO
+						// SIMPLEETL.STAGING_COH_RELATION_ITEM
+						// (PARENT_ITEM_CODE, ITEM_RELATION_TARGET,
+						// ITEM_RELATION_CODE, STATUS, START_DATE, END_DATE)
+						// VALUES (?,?,?,?,?,?)
 						ora_st_item_relation.setString(1, oEntity.getITEMCODE());
 						ora_st_item_relation.setString(2, oRelationItem.getITEMRELATIONTARGET());
 						ora_st_item_relation.setString(3, oRelationItem.getITEMRELATIONCODE());
 						ora_st_item_relation.setString(4, oRelationItem.getSTATUS());
 						ora_st_item_relation.setString(5, oRelationItem.getSTARTDATE());
 						ora_st_item_relation.setString(6, oRelationItem.getENDDATE());
-												
-						ora_st_item_relation.executeUpdate();
+
+						try {
+							ora_st_item_relation.executeUpdate();
+						} catch (SQLException sqle) {
+							// do nothing here,
+							iRelationItemErr++;
+							logger.error("PRODUCT_DATA (" + oEntity.getITEMCODE() + ") Attribute ("
+									+ oRelationItem.getITEMRELATIONTARGET() + ") has error!");
+						}
 					}
-					
-					//write COH_ATTRIBUTE
+
+					// write COH_ATTRIBUTE
 					List<COMMON_ATTRIBUTE> lsAttributes = oEntity.getLsAttributes();
-					
-					for(int k =0; k < lsAttributes.size(); k++){						
-						COMMON_ATTRIBUTE oAttribute = (COMMON_ATTRIBUTE)lsAttributes.get(k); 
-						
-						//STAGING_COH_ATTRIBUTE=INSERT INTO SIMPLEETL.STAGING_COH_ATTRIBUTE (PARENT_ITEM_CODE, ITEM_ATTRIBUTE_CODE, ATTRIBUTE_CODE, ITEM_RELATION_CODE, ATTR_TYPE, STATUS, ATTR_NAME, START_DATE, END_DATE, DEFAULT_VALUE, ASSOCIATION_TYPE) 
-						//VALUES (?,?,?,?,?,?,?,?,?,?,?)	
-							
-/*						logger.debug("oAttribute.parentitemcode=" + oEntity.getITEMCODE());
-						logger.debug("oAttribute.itemattributecode=" + oAttribute.getITEMATTRIBUTECODE());
-						logger.debug("oAttribute.attributecode=" + oAttribute.getATTRIBUTECODE());
-						logger.debug("oAttribute.itemrelationcode=" + oAttribute.getITEMRELATIONCODE());
-						logger.debug("oAttribute.type=" + oAttribute.getTYPE());
-						logger.debug("oAttribute.status=" + oAttribute.getSTATUS());
-						logger.debug("oAttribute.name=" + oAttribute.getNAME());
-						logger.debug("oAttribute.startdate=" + oAttribute.getSTARTDATE());
-						logger.debug("oAttribute.enddate=" + oAttribute.getENDDATE());
-						logger.debug("oAttribute.defaultvalue=" + oAttribute.getDEFAULTVALUE());
-						logger.debug("oAttribute.associatetype=" + oAttribute.getASSOCIATIONTYPE());									
-*/						
+					iAttributeErr = 0;
+
+					for (int k = 0; k < lsAttributes.size(); k++) {
+						COMMON_ATTRIBUTE oAttribute = (COMMON_ATTRIBUTE) lsAttributes.get(k);
+
+						// STAGING_COH_ATTRIBUTE=INSERT INTO
+						// SIMPLEETL.STAGING_COH_ATTRIBUTE (PARENT_ITEM_CODE,
+						// ITEM_ATTRIBUTE_CODE, ATTRIBUTE_CODE,
+						// ITEM_RELATION_CODE, ATTR_TYPE, STATUS, ATTR_NAME,
+						// START_DATE, END_DATE, DEFAULT_VALUE,
+						// ASSOCIATION_TYPE)
+						// VALUES (?,?,?,?,?,?,?,?,?,?,?)
+
+						/*
+						 * logger.debug("oAttribute.parentitemcode=" +
+						 * oEntity.getITEMCODE());
+						 * logger.debug("oAttribute.itemattributecode=" +
+						 * oAttribute.getITEMATTRIBUTECODE());
+						 * logger.debug("oAttribute.attributecode=" +
+						 * oAttribute.getATTRIBUTECODE());
+						 * logger.debug("oAttribute.itemrelationcode=" +
+						 * oAttribute.getITEMRELATIONCODE());
+						 * logger.debug("oAttribute.type=" +
+						 * oAttribute.getTYPE());
+						 * logger.debug("oAttribute.status=" +
+						 * oAttribute.getSTATUS());
+						 * logger.debug("oAttribute.name=" +
+						 * oAttribute.getNAME());
+						 * logger.debug("oAttribute.startdate=" +
+						 * oAttribute.getSTARTDATE());
+						 * logger.debug("oAttribute.enddate=" +
+						 * oAttribute.getENDDATE());
+						 * logger.debug("oAttribute.defaultvalue=" +
+						 * oAttribute.getDEFAULTVALUE());
+						 * logger.debug("oAttribute.associatetype=" +
+						 * oAttribute.getASSOCIATIONTYPE());
+						 */
 						ora_st_attr.setString(1, oEntity.getITEMCODE());
 						ora_st_attr.setString(2, oAttribute.getITEMATTRIBUTECODE());
 						ora_st_attr.setString(3, oAttribute.getATTRIBUTECODE());
@@ -195,14 +221,19 @@ public class SQLLoader_PRODUCT {
 						ora_st_attr.setString(9, oAttribute.getENDDATE());
 						ora_st_attr.setString(10, oAttribute.getDEFAULTVALUE());
 						ora_st_attr.setString(11, oAttribute.getASSOCIATIONTYPE());
-						
-						ora_st_attr.executeUpdate();
+
+						try {
+							ora_st_attr.executeUpdate();
+						} catch (SQLException sqle) {
+							iAttributeErr++;
+							logger.error("PRODUCT_DATA (" + oEntity.getITEMCODE() + ") Attribute ("
+									+ oAttribute.getITEMATTRIBUTECODE() + ") has error!");
+						}
 					}
-					
-					logger.debug("iResult("+i+")=" + iResult);
+
 					iLoadCount += iResult;
 				}
-								
+
 				if (!dbMgr.isAutoCommit()) {
 					destConn.commit();
 				}
@@ -215,20 +246,17 @@ public class SQLLoader_PRODUCT {
 					ora_st.close();
 					ora_st = null;
 				}
-				
-				
+
 				if (ora_st_item_relation != null) {
 					ora_st_item_relation.close();
 					ora_st_item_relation = null;
 				}
-
 
 				if (ora_st_attr != null) {
 					ora_st_attr.close();
 					ora_st_attr = null;
 				}
 
-				
 				// dispose connection
 				if (this.destConn != null) {
 					destConn.close();
@@ -261,6 +289,8 @@ public class SQLLoader_PRODUCT {
 			logger.info("start date: " + sdf.format(this.dtPerformed));
 			logger.info("read source: " + iSrcCount + " records");
 			logger.info("write destination: " + iLoadCount + " records");
+			logger.info("write ItemRelation error: " + this.iRelationItemErr + " records");
+			logger.info("write Attribute error: " + this.iAttributeErr + " records");
 			logger.info("finished date: " + sdf.format(this.dtFinished));
 			logger.info("=======================================================");
 

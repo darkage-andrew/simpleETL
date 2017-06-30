@@ -499,10 +499,10 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 		if (qName.equalsIgnoreCase("ITEMRELATIONCODE")&& (iCurrentSubObject == CURRENT_RELATION_ITEM)) {
 			oRelationItem.setITEMRELATIONCODE(sObjVal);
 			logger.debug("debug: ITEMRELATIONCODE=" + sObjVal);
-			if (sObjVal.isEmpty() || sObjVal.length() == 0 || sObjVal == null) {
+/*			if (sObjVal.isEmpty() || sObjVal.length() == 0 || sObjVal == null) {
 				logger.debug("PRODUCTDATA.ItemCode=" + oProductData.getITEMCODE() + ", RelationItem.ITEMRELATIONCODE 為空!!");
 			}
-			logger.debug("----------ITEMRELATIONCODE=" + sObjVal);
+*/			logger.debug("----------ITEMRELATIONCODE=" + sObjVal);
 		}
 
 		if (qName.equalsIgnoreCase("STATUS") && (iCurrentSubObject == CURRENT_RELATION_ITEM)) {
@@ -538,10 +538,10 @@ public class SAXHandler_PRODUCTDATA extends DefaultHandler {
 			oAttribute.setITEMRELATIONCODE(sObjVal);
 			logger.debug("debug: Attribute.ITEMRELATIONCODE=" + sObjVal);
 			
-			if (sObjVal.isEmpty() || sObjVal.length() == 0 || sObjVal == null) {
+/*			if (sObjVal.isEmpty() || sObjVal.length() == 0 || sObjVal == null) {
 				logger.debug("PRODUCTDATA.ItemCode=" + oProductData.getITEMCODE() + ", Attribute.ITEMRELATIONCODE 為空!!");
 			}
-			logger.debug("----------ITEMRELATIONCODE=" + sObjVal);
+*/			logger.debug("----------ITEMRELATIONCODE=" + sObjVal);
 		}
 
 		if (qName.equalsIgnoreCase("TYPE")) {

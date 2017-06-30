@@ -81,7 +81,7 @@ public class SQLLoader_CODETABLE {
 				// get DB connection
 				DBMgr dbMgr = DBMgr.getDBMgr(logger);
 				destConn = dbMgr.createDBConnection();
-				ora_st = destConn.prepareStatement((String) propUtil.getProperty("STAGING_CODETABLE_SQL"));
+				ora_st = destConn.prepareStatement((String) propUtil.getProperty("CODETABLE_SQL"));
 
 				for (int i = 0; i < lsCodeTable.size(); i++) {
 					CODE_TABLE oCodeTable = (CODE_TABLE) lsCodeTable.get(i);

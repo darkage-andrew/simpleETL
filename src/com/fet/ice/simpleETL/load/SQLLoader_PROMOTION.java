@@ -44,6 +44,8 @@ public class SQLLoader_PROMOTION {
 	protected int iSrcDataCount;
 	private Logger logger;
 	private PrintStackTraceUtil printStackTraceUtil;
+	private int iAttributeErr;
+	private int iRelationItemErr;
 
 	// log related
 	protected Timestamp dtPerformed;
@@ -92,9 +94,9 @@ public class SQLLoader_PROMOTION {
 
 				// get DB connection
 				destConn = dbMgr.createDBConnection();
-				ora_st = destConn.prepareStatement((String) propUtil.getProperty("STAGING_COH_ITEM_SQL"));
-				ora_st_attr = destConn.prepareStatement((String) propUtil.getProperty("STAGING_COH_ATTRIBUTE_SQL"));
-				ora_st_item_relation = destConn.prepareStatement((String) propUtil.getProperty("STAGING_ITEM_RELATION_SQL"));
+				ora_st = destConn.prepareStatement((String) propUtil.getProperty("COH_ITEM_SQL"));
+				ora_st_attr = destConn.prepareStatement((String) propUtil.getProperty("COH_ATTRIBUTE_SQL"));
+				ora_st_item_relation = destConn.prepareStatement((String) propUtil.getProperty("ITEM_RELATION_SQL"));
 
 				for (int i = 0; i < lsEntity.size(); i++) {
 					COMMON_ENTITY oEntity = lsEntity.get(i);
@@ -115,6 +117,7 @@ public class SQLLoader_PROMOTION {
 					
 					//write STAGING_COH_RELATION_ITEM
 					List<COMMON_RELATIONITEM> lsItemRelations = oEntity.getLsItemRelations();
+					iRelationItemErr = 0;
 					for(int j = 0; j < lsItemRelations.size(); j++)
 					{
 						COMMON_RELATIONITEM oRelationItem = lsItemRelations.get(j);
@@ -128,11 +131,18 @@ public class SQLLoader_PROMOTION {
 						ora_st_item_relation.setString(5, oRelationItem.getSTARTDATE());
 						ora_st_item_relation.setString(6, oRelationItem.getENDDATE());
 												
-						ora_st_item_relation.executeUpdate();
+						try {
+							ora_st_item_relation.executeUpdate();
+						} catch (SQLException sqle) {
+							// do nothing here,
+							iRelationItemErr++;
+							logger.error("PRODUCT_DATA (" + oEntity.getITEMCODE() + ") Attribute (" + oRelationItem.getITEMRELATIONTARGET() + ") has error!");
+						}
 					}
 					
 					//write COH_ATTRIBUTE
 					List<COMMON_ATTRIBUTE> lsAttributes = oEntity.getLsAttributes();
+					iAttributeErr = 0;
 					
 					for(int k =0; k < lsAttributes.size(); k++){						
 						COMMON_ATTRIBUTE oAttribute = (COMMON_ATTRIBUTE)lsAttributes.get(k); 
@@ -164,7 +174,13 @@ public class SQLLoader_PROMOTION {
 						ora_st_attr.setString(10, oAttribute.getDEFAULTVALUE());
 						ora_st_attr.setString(11, oAttribute.getASSOCIATIONTYPE());
 						
-						ora_st_attr.executeUpdate();
+						try {
+							ora_st_attr.executeUpdate();
+						} catch (SQLException sqle) {
+							// do nothing here,
+							iAttributeErr++;
+							logger.error("PRODUCT_DATA (" + oEntity.getITEMCODE() + ") Attribute (" + oAttribute.getITEMATTRIBUTECODE() + ") has error!");
+						}
 					}
 					
 					iLoadCount += iResult;
@@ -228,6 +244,8 @@ public class SQLLoader_PROMOTION {
 			logger.info("start date: " + sdf.format(this.dtPerformed));
 			logger.info("read source: " + iSrcCount + " records");
 			logger.info("write destination: " + iLoadCount + " records");
+			logger.info("write ItemRelation error: " + this.iRelationItemErr + " records");
+			logger.info("write Attribute error: " + this.iAttributeErr + " records");
 			logger.info("finished date: " + sdf.format(this.dtFinished));
 			logger.info("=======================================================");
 

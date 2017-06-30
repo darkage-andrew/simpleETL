@@ -71,8 +71,8 @@ public class PromotionData_Extractor extends threadJob {
 		}
 
 		// execute Load tasks
-		//SQLLoader_PROMOTION loader = new SQLLoader_PROMOTION(logger);
-		//loader.perfomSync(oPromotionData);
+		SQLLoader_PROMOTION loader = new SQLLoader_PROMOTION(logger);
+		loader.perfomSync(oPromotionData);
 		
 		// return result
 		iStatus = this.JOB_COMPLETED;
